@@ -1,21 +1,29 @@
 <template>
   <div class="name">
-    {{greeting(name)}}
+    {{name}}
   </div>
+  <button 
+    class="btn btn-primary"
+    v-on:click="updateName"
+    >click</button>
 </template>
 
 <script>
+import { reactive } from 'vue';
+
 export default {
   setup() {
-    const name = 'Molly Coding';
+    const name = reactive({
+      id: 'molly',
+    })
 
-    const greeting = (name) => {
-      return `Hello ${name}`;
-    };
+    const updateName = () => {
+      name.id = 'Molly';
+    }
 
     return {
       name,
-      greeting
+      updateName
     }
   }
 }
