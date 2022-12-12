@@ -7,6 +7,7 @@
       type="text" 
       v-model="searchText"
       placeholder="Search"
+      @keyup.enter="searchTodo"
     >
     <hr/>
     <TodoSimpleForm @add-todo="addTodo"/>
@@ -16,19 +17,41 @@
       추가된 ToDo가 없습니다
     </div>
 
-    <div v-if="!filteredTodos.length">
+    <div v-if="!todos.length">
       There is nothing to display
     </div>
     <TodoList 
-      :todos="filteredTodos" 
+      :todos="todos" 
       @toggle-todo="toggleTodo" 
       @delete-todo="deleteTodo"/>
+
+    <hr>
+
+    <nav aria-label="Page navigation example">
+      <ul class="pagination">
+        <li v-if="(currentPage !== 1)" class="page-item">
+          <a style="cursor: pointer;" class="page-link" @click="getTodos(currentPage - 1)">Previous</a>
+        </li>
+
+        <li 
+          v-for="page in numberOfPages"
+          :key="page"
+          :class="currentPage === page ? 'active' : ''"
+          class="page-item">
+          <a style="cursor: pointer;" class="page-link" @click="getTodos(page)">{{page}}</a>
+        </li>
+
+        <li v-if="(numberOfPages !== currentPage)" class="page-item">
+          <a style="cursor: pointer;" class="page-link" @click="getTodos(currentPage + 1)">Next</a>
+        </li>
+      </ul>
+    </nav>
     
   </div>
 </template>
 
 <script>
-import { ref, computed } from 'vue';
+import { ref, computed, watch } from 'vue';
 import TodoSimpleForm from './components/TodoSimpleForm.vue';
 import TodoList from './components/TodoList.vue';
 import axios from 'axios';
@@ -42,11 +65,22 @@ export default {
   setup() {
     const todos = ref([]);
     const error = ref('');
+    const numberOfTodos = ref(0);
+    const limit = 5;
+    const currentPage = ref(1);
+    const searchText = ref('');
 
-    const getTodos = async () => {
+    const numberOfPages = computed(() => {
+      return Math.ceil(numberOfTodos.value/limit);
+    })
+
+    const getTodos = async (page = currentPage.value) => {
       try {
-        const res = await axios.get('http://localhost:3000/todos');
-        console.log(res);
+        const res = await axios.get(
+          `http://localhost:3000/todos?_sort=id&_order=desc&subject_like=${searchText.value}&_page=${page}&_limit=${limit}`
+          );
+        numberOfTodos.value = res.headers['x-total-count'];
+        currentPage.value = page;
         todos.value = res.data;
       } catch (err) {
         console.log(err);
@@ -60,11 +94,12 @@ export default {
       // DB에 데이터 저장
       error.value = '';
       try {
-        const res = await axios.post('http://localhost:3000/todos', {
+        await axios.post('http://localhost:3000/todos', {
           subject: todo.subject,
           completed: todo.completed,
         });
-        todos.value.push(res.data);
+
+        getTodos(1);
       } catch (err) {
         console.log(err);
         error.value = 'Something when wrong.';
@@ -93,7 +128,7 @@ export default {
 
       try {
         axios.delete(`http://localhost:3000/todos/${id}`);
-        todos.value.splice(index, 1);
+        getTodos(1);
       } 
       catch (err) {
         console.log(err);
@@ -102,16 +137,28 @@ export default {
 
     };
 
-    const searchText = ref('');
-    const filteredTodos = computed(() => {
-      if (searchText.value) {
-        return todos.value.filter(todo => {
-          return todo.subject.includes(searchText.value);
-        });
-      }
 
-      return todos.value;
+    let timeout = null;
+    const searchTodo = () => {
+      clearTimeout(timeout);
+      getTodos(1);
+    }
+    watch(searchText, () => {
+      clearTimeout(timeout);
+
+      timeout = setTimeout(() => {
+        getTodos(1);
+      }, 2000);
     });
+    // const filteredTodos = computed(() => {
+    //   if (searchText.value) {
+    //     return todos.value.filter(todo => {
+    //       return todo.subject.includes(searchText.value);
+    //     });
+    //   }
+
+    //   return todos.value;
+    // });
 
     return {
       todos,
@@ -119,9 +166,13 @@ export default {
       toggleTodo,
       deleteTodo,
       searchText,
-      filteredTodos,
+      // filteredTodos,
       error,
-      getTodos
+      getTodos,
+      numberOfTodos,
+      numberOfPages,
+      currentPage,
+      searchTodo
     }
   }
 }
