@@ -61,29 +61,14 @@
       "id": 17
     },
     {
-      "subject": "123",
-      "completed": false,
-      "id": 18
-    },
-    {
       "subject": "124444",
-      "completed": false,
+      "completed": true,
       "id": 19
     },
     {
-      "subject": "asf",
-      "completed": false,
-      "id": 21
-    },
-    {
       "subject": "asdf",
-      "completed": false,
+      "completed": true,
       "id": 23
-    },
-    {
-      "subject": "new",
-      "completed": false,
-      "id": 24
     }
   ]
 }
