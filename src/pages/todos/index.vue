@@ -45,6 +45,12 @@
         </li>
         </ul>
     </nav>
+
+    <Toast 
+    v-if="showToast"
+    :message="toastMessage"
+    :type="toastAlertType"
+    />
     
 </template>
     
@@ -53,11 +59,14 @@ import { ref, computed, watch } from 'vue';
 import TodoSimpleForm from '@/components/TodoSimpleForm.vue';
 import TodoList from '@/components/TodoList.vue';
 import axios from 'axios';
+import Toast from '@/components/Toast.vue';
+import { useToast } from '@/composables/toast';
 
 export default {
     components: {
     TodoSimpleForm,
     TodoList,
+    Toast,
     },
 
     setup() {
@@ -72,6 +81,13 @@ export default {
         return Math.ceil(numberOfTodos.value/limit);
     })
 
+    const {
+        toastMessage,
+        toastAlertType,
+        showToast,
+        triggerToast,
+    } = useToast();
+
     const getTodos = async (page = currentPage.value) => {
         try {
         const res = await axios.get(
@@ -83,6 +99,7 @@ export default {
         } catch (err) {
         console.log(err);
         error.value = 'Something when wrong.';
+        triggerToast('Something went Wrong', 'danger');
         }
     }
 
@@ -101,6 +118,7 @@ export default {
         } catch (err) {
         console.log(err);
         error.value = 'Something when wrong.';
+        triggerToast('Something went Wrong', 'danger');
         }
     }
 
@@ -117,6 +135,7 @@ export default {
         } catch (err) {
         console.log(err);
         error.value = 'Something when wrong.';
+        triggerToast('Something went Wrong', 'danger');
         }
     };
 
@@ -131,6 +150,7 @@ export default {
         catch (err) {
         console.log(err);
         error.value = 'Something when wrong.';
+        triggerToast('Something went Wrong', 'danger');
         }
 
     };
@@ -170,7 +190,10 @@ export default {
         numberOfTodos,
         numberOfPages,
         currentPage,
-        searchTodo
+        searchTodo,
+        toastMessage,
+        toastAlertType,
+        showToast,
     }
     }
 }

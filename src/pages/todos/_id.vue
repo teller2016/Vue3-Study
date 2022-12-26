@@ -56,16 +56,15 @@
     :message="toastMessage"
     :type="toastAlertType"
     />
-
-    <div id="kossie">coder</div>
 </template>
 
 <script>
 import { useRoute, useRouter } from 'vue-router';
 import axios from 'axios';
-import { computed, ref, onUnmounted } from 'vue';
+import { computed, ref } from 'vue';
 import _ from 'lodash';
 import Toast from '@/components/Toast.vue';
+import { useToast } from '@/composables/toast';
 
 export default {
     components: {
@@ -78,15 +77,14 @@ export default {
         const todo = ref(null);
         const originalTodo = ref(null);
         const loading = ref(true);
-        const showToast = ref(false);
-        const toastMessage = ref('');
-        const toastAlertType = ref('');
-        const timeout = ref(null);
         const todoId = route.params.id;
 
-        onUnmounted(() => {
-            clearTimeout(timeout.value);
-        });
+        const {
+            toastMessage,
+            toastAlertType,
+            showToast,
+            triggerToast,
+        } = useToast();
 
         const getTodo = async () => {
 
@@ -117,19 +115,6 @@ export default {
             todo.value.completed = !todo.value.completed;
         };
 
-
-        const triggerToast = (message, type) => {
-            showToast.value = true;
-            toastMessage.value = message;
-            toastAlertType.value = type;
-
-            timeout.value = setTimeout(() => {
-                toastMessage.value = '';
-                showToast.value = false;
-                toastAlertType.value = '';
-            }, 3000);
-        }
-
         const onSave = async () => {
             try {
                 const res = await axios.put(`http://localhost:3000/todos/${todoId}`, {
@@ -154,9 +139,9 @@ export default {
             moveToTodoListPage,
             onSave,
             todoUpdated,
-            showToast,
             toastMessage,
             toastAlertType,
+            showToast,
         };
     }
 }
