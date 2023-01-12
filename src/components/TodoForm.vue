@@ -8,7 +8,7 @@
         >
         <div class="row">
             <div class="col-6">
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <label>Subject</label>
                     <input 
                         v-model="todo.subject" 
@@ -18,8 +18,16 @@
                     v-if="subjectError"
                     class="text-red"
                     >{{subjectError}}</div>
-                </div>
-
+                </div> -->
+                <Input 
+                    label="Subject"
+                    v-model:subject="todo.subject"
+                    :error="subjectError"
+                >
+                    <template>
+                        
+                    </template>
+                </Input>
             </div>
             <div v-if="editing" class="col-6">
                 <div class="form-group">
@@ -79,10 +87,12 @@ import { computed, ref } from 'vue';
 import _ from 'lodash';
 import Toast from '@/components/Toast.vue';
 import { useToast } from '@/composables/toast';
+import Input from '@/components/Input.vue';
 
 export default {
     components: {
         Toast,
+        Input,
     },
     props: {
         editing: {
@@ -98,6 +108,7 @@ export default {
             subject: '',
             completed: false,
         });
+
         const originalTodo = ref(null);
         const loading = ref(false);
         const todoId = route.params.id;
